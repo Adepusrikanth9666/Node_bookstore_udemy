@@ -1,5 +1,4 @@
 const mongodb = require('mongodb')
-const { where } = require('sequelize');
 const Product = require('../models/product');
 
 const ObjectId = mongodb.ObjectId
@@ -17,8 +16,7 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const product = new Product(title,imageUrl,price,description,null,req.user._id);
-
+  const product = new Product({title:title,description:description,imageUrl:imageUrl,price:price,userId:req.user});
   product.save()
   .then(result => {
       // console.log(result);
@@ -59,9 +57,14 @@ exports.postEditProduct = (req, res, next) => {
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
-      const product = new Product(updatedTitle,updatedImageUrl,updatedPrice, updatedDesc,new ObjectId(prodId))
-      return product.save()
-    .then(result => {
+
+  Product.findById(prodId).then(product=>{
+    product.title = updatedTitle;
+    product.price = updatedPrice;
+    product.description = updatedDesc
+    product.imageUrl = updatedImageUrl
+    return product.save()
+  }).then(result => {
       console.log('UPDATED PRODUCT!');
       res.redirect('/admin/products');
     })
@@ -82,8 +85,8 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct =  (req, res, next) => {
   const prodId = req.body.productId;
-  Product.deleteById(prodId).then(()=>{
-    console.log("Destory Product");
+  Product.findByIdAndDelete(prodId).then(()=>{
+    console.log("Destory Pr oduct");
     res.redirect('/admin/products');
   }).catch(err=>console.log(err))
   

@@ -1,10 +1,8 @@
 const Product = require('../models/product');
-// const Cart = require('../models/cart');
-const { where } = require('sequelize');
-const Order = require('../models/order')
+const Order = require('../models/orders');
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  Product.findById()
     .then(products => {
       res.render('shop/product-list', {
         prods: products,
@@ -19,15 +17,7 @@ exports.getProducts = (req, res, next) => {
 
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
-  // Product.findAll({ where: { id: prodId } })
-  //   .then(products => {
-  //     res.render('shop/product-detail', {
-  //       product: products[0],
-  //       pageTitle: products[0].title,
-  //       path: '/products'
-  //     });
-  //   })
-  //   .catch(err => console.log(err));
+
   Product.findById(prodId)
     .then(product => {
       res.render('shop/product-detail', {
@@ -40,22 +30,23 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.fetchAll()
-    .then(products => {
-      res.render('shop/index', {
-        prods: products,
-        pageTitle: 'Shop',
-        path: '/'
-      });
-    })
-    .catch(err => {
-      console.log(err);
-    });
+  // Product.fetchAll()
+  //   .then(products => {
+  //     res.render('shop/index', {
+  //       prods: products,
+  //       pageTitle: 'Shop',
+  //       path: '/'
+  //     });
+  //   })
+  //   .catch(err => {
+  //     console.log(err);
+  //   });
 };
 
 exports.getCart = (req, res, next) => {
 
-  req.user.getCart().then(products=>{
+  req.user.populate('cart.items.productId').execPopulate().then(user=>{
+    const products = user.cart.items
    
       res.render('shop/cart', {
               path: '/cart',
@@ -88,10 +79,9 @@ exports.postCartDeleteProduct = (req, res, next) => {
 };
 
 exports.postOrder=(req,res,next)=>{
-  let fetchCart
   req.user.addOrder()
   .then(result=>{
-    res.redirect('/orders')
+       res.redirect('/orders')
   })
 }
 
